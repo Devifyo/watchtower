@@ -17,7 +17,7 @@ class Watchtower
     /**
      * The package version.
      */
-    public const VERSION = '1.0.1';
+    public const VERSION = '1.0.2';
 
     /**
      * The callback that authorizes dashboard access.

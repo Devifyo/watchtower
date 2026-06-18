@@ -173,6 +173,27 @@
     border-color: color-mix(in srgb, var(--wt-fail) 50%, transparent);
   }
 
+  /* Monospace output/trace block. Defined globally (not per-view) so every
+     component — including the setup screen — gets correct wrapping and never
+     overflows its card. */
+  .wt-output {
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.72rem;
+    line-height: 1.55;
+    white-space: pre-wrap;       /* wrap long lines */
+    word-break: break-word;
+    overflow-wrap: anywhere;     /* break unbroken paths/URLs */
+    max-width: 100%;
+    box-sizing: border-box;
+    background: var(--wt-bg-2);
+    border: 1px solid var(--wt-border);
+    border-radius: 0.5rem;
+    padding: 0.7rem 0.85rem;
+    max-height: 320px;
+    overflow: auto;
+    color: var(--wt-text);
+  }
+
   /* Mono uppercase HUD badges (kept from the refined layer). */
   .wt-badge {
     display: inline-flex;

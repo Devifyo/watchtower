@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-06-18
+
+### Fixed
+
+- Setup screen: long migration output and file paths no longer overflow the
+  card. The monospace output/trace block (`.wt-output`) is now styled globally
+  with proper line wrapping instead of relying on per-view scoped styles.
+
 ## [1.0.1] - 2026-06-18
 
 ### Added
@@ -44,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or reopened exceptions.
 - **Dashboard** — a compiled Vue single-page dashboard shipped with the package.
 
-[Unreleased]: https://github.com/Devifyo/watchtower/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/Devifyo/watchtower/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/Devifyo/watchtower/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/Devifyo/watchtower/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Devifyo/watchtower/releases/tag/v1.0.0
