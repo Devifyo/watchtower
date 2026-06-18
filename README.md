@@ -7,10 +7,16 @@
 </p>
 
 <p align="center">
+  <a href="https://packagist.org/packages/devifyo/watchtower"><img alt="Packagist Version" src="https://img.shields.io/packagist/v/devifyo/watchtower?style=flat-square&logo=packagist&logoColor=white&color=4f46e5"></a>
+  <a href="https://packagist.org/packages/devifyo/watchtower/stats"><img alt="Total Downloads" src="https://img.shields.io/packagist/dt/devifyo/watchtower?style=flat-square"></a>
   <a href="https://github.com/Devifyo/watchtower/actions"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/Devifyo/watchtower/tests.yml?branch=main&label=tests&style=flat-square&logo=github"></a>
-  <img alt="PHP" src="https://img.shields.io/badge/php-%E2%89%A5%208.2-777BB4?style=flat-square&logo=php&logoColor=white">
+  <img alt="PHP" src="https://img.shields.io/packagist/php-v/devifyo/watchtower?style=flat-square&logo=php&logoColor=white&color=777BB4">
   <img alt="Laravel" src="https://img.shields.io/badge/laravel-11.x%20%7C%2012.x-FF2D20?style=flat-square&logo=laravel&logoColor=white">
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4f46e5?style=flat-square"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
+</p>
+
+<p align="center">
+  <strong><a href="https://packagist.org/packages/devifyo/watchtower">📦 View on Packagist</a></strong>
 </p>
 
 <!-- TODO: replace art/hero.svg with an animated hero.gif of the live dashboard -->
