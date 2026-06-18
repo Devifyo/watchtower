@@ -67,6 +67,9 @@ export const api = {
   // Endpoints
   overview: () => api.get('/overview'),
 
+  setupStatus: () => api.get('/setup/status'),
+  setupMigrate: () => api.post('/setup/migrate'),
+
   schedule: () => api.get('/schedule'),
   scheduleHistory: (key) => api.get('/schedule/history', { key }),
   scheduleRun: (key) => api.post('/schedule/run', { key }),

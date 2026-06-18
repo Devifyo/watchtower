@@ -15,11 +15,13 @@ import ConfirmDialog from './components/ConfirmDialog.vue';
 import ScheduleView from './views/ScheduleView.vue';
 import QueuesView from './views/QueuesView.vue';
 import ErrorsView from './views/ErrorsView.vue';
+import SetupScreen from './views/SetupScreen.vue';
 
 const { paused, togglePause, lastTick } = usePolling();
 
 const overview = ref(null);
 const overviewError = ref(null);
+const needsSetup = ref(false);
 
 const TABS = [
   { id: 'schedule', label: 'Schedule', icon: 'schedule' },
@@ -42,9 +44,20 @@ async function loadOverview() {
   try {
     overview.value = await api.overview();
     overviewError.value = null;
+    needsSetup.value = false;
   } catch (e) {
-    overviewError.value = e.message;
+    if (e.status === 503 && e.data && e.data.error === 'watchtower_not_installed') {
+      needsSetup.value = true;
+      overviewError.value = null;
+    } else {
+      overviewError.value = e.message;
+    }
   }
+}
+
+function onSetupDone() {
+  needsSetup.value = false;
+  loadOverview();
 }
 
 const currentView = computed(() => {
@@ -113,6 +126,10 @@ onPoll(loadOverview);
     </header>
 
     <main class="mx-auto max-w-[1280px] px-4 py-5 sm:px-6">
+      <!-- First-run / multi-tenant setup screen -->
+      <SetupScreen v-if="needsSetup" @done="onSetupDone" />
+
+      <template v-else>
       <!-- Summary bar -->
       <div class="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
@@ -165,6 +182,7 @@ onPoll(loadOverview);
           generated {{ relativeTime(overview.meta.generated_at) }}
         </span>
       </footer>
+      </template>
     </main>
 
     <Toasts />

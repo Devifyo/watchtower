@@ -55,6 +55,7 @@ class WatchtowerServiceProvider extends ServiceProvider
         $this->registerMigrations();
         $this->registerPublishing();
         $this->registerCommands();
+        $this->registerMissingTableRenderer();
 
         if (config('watchtower.enabled', true)) {
             $this->registerListeners();
@@ -178,5 +179,52 @@ class WatchtowerServiceProvider extends ServiceProvider
                 });
             }
         });
+    }
+
+    /**
+     * When a Watchtower route hits a "table not found" error (first run, or a
+     * multi-tenant app whose default connection lacks the tables), render a
+     * clear, actionable JSON response instead of a raw SQL exception. The
+     * dashboard turns this into a one-click "Set up database" screen.
+     *
+     * Registered as a renderable callback because Laravel's routing pipeline
+     * renders controller exceptions via the handler before they reach
+     * middleware — so a middleware try/catch would never see them.
+     */
+    protected function registerMissingTableRenderer(): void
+    {
+        $this->callAfterResolving(ExceptionHandler::class, function ($handler) {
+            if (! method_exists($handler, 'renderable')) {
+                return;
+            }
+
+            $handler->renderable(function (\Illuminate\Database\QueryException $e, $request) {
+                if (! $request->routeIs('watchtower.*') || ! $this->isMissingTableError($e)) {
+                    return null;
+                }
+
+                $connection = config('watchtower.connection') ?: config('database.default');
+
+                return response()->json([
+                    'error' => 'watchtower_not_installed',
+                    'message' => "Watchtower tables were not found on the \"{$connection}\" database connection. "
+                        .'Use the "Set up database" button to create them, or run `php artisan watchtower:install`. '
+                        .'If your app is multi-tenant (the default connection switches per request), set '
+                        .'WATCHTOWER_DB_CONNECTION to a stable central connection and migrate it.',
+                    'connection' => $connection,
+                ], 503);
+            });
+        });
+    }
+
+    protected function isMissingTableError(\Illuminate\Database\QueryException $e): bool
+    {
+        $message = $e->getMessage();
+
+        return ((string) $e->getCode()) === '42S02'
+            || str_contains($message, 'Base table or view not found')
+            || str_contains($message, 'no such table')
+            || str_contains($message, 'Undefined table')
+            || str_contains($message, 'does not exist');
     }
 }

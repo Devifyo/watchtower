@@ -20,6 +20,7 @@ class DashboardController
                 'pollingInterval' => (int) config('watchtower.dashboard.polling_interval', 5000),
                 'perPage' => (int) config('watchtower.dashboard.per_page', 25),
                 'recording' => config('watchtower.recording', []),
+                'tablePrefix' => config('watchtower.table_prefix', 'watchtower_'),
             ],
         ]);
     }

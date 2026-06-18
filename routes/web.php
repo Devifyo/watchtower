@@ -6,6 +6,7 @@ use Watchtower\Http\Controllers\ExceptionController;
 use Watchtower\Http\Controllers\OverviewController;
 use Watchtower\Http\Controllers\QueueController;
 use Watchtower\Http\Controllers\ScheduleController;
+use Watchtower\Http\Controllers\SetupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,10 @@ use Watchtower\Http\Controllers\ScheduleController;
 // JSON API ------------------------------------------------------------------
 Route::prefix('api')->name('api.')->group(function () {
     Route::get('overview', [OverviewController::class, 'index'])->name('overview');
+
+    // First-run / multi-tenant setup helper.
+    Route::get('setup/status', [SetupController::class, 'status'])->name('setup.status');
+    Route::post('setup/migrate', [SetupController::class, 'migrate'])->name('setup.migrate');
 
     // Schedule
     Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');

@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-06-18
+
+### Added
+
+- **In-dashboard database setup** — when Watchtower's tables are missing, the
+  dashboard now shows a "Set up database" screen with a one-click button that
+  runs only Watchtower's migrations (great for first run and multi-tenant apps).
+  New endpoints: `GET /api/setup/status` and `POST /api/setup/migrate`.
+
+### Changed
+
+- A missing-tables error now renders a clear, actionable message naming the
+  database connection, instead of leaking a raw SQL exception to the dashboard.
+
+### Fixed
+
+- Multi-tenant footgun where the default connection switches per request: set
+  `WATCHTOWER_DB_CONNECTION` to a stable central connection (now documented).
+
 ## [1.0.0] - 2026-06-18
 
 ### Added
@@ -25,5 +44,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or reopened exceptions.
 - **Dashboard** — a compiled Vue single-page dashboard shipped with the package.
 
-[Unreleased]: https://github.com/Devifyo/watchtower/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Devifyo/watchtower/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/Devifyo/watchtower/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Devifyo/watchtower/releases/tag/v1.0.0

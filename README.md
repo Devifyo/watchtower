@@ -66,6 +66,16 @@ https://your-app.test/watchtower
 
 Out of the box the dashboard is accessible in your **local** environment with no extra setup. (See [Security](#-security) before exposing it in production.)
 
+> **First run / multi-tenant apps:** if the tables haven't been created on the
+> connection Watchtower is using, the dashboard shows a **"Set up database"**
+> screen with a one-click button to run its migrations. In a **multi-tenant**
+> app whose default connection changes per request, point Watchtower at a stable
+> central connection so its data lives in one place:
+> ```env
+> WATCHTOWER_DB_CONNECTION=mysql   # your central/landlord connection name
+> ```
+> then `php artisan config:clear` and click the setup button (or `php artisan migrate`).
+
 ---
 
 ## 🚀 Usage
