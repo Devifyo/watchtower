@@ -1,6 +1,6 @@
 # Watchtower
 
-> One production-safe dashboard for everything happening in the background of your Laravel app — scheduled tasks, queues & jobs, and errors — that also lets you **fix them**. Works with **any** queue driver (database, Redis, SQS). No Redis required.
+> One production-safe dashboard for everything happening in the background of your Laravel app — scheduled tasks, queues & jobs, and errors — that also lets you **fix them**. Works with **any** queue driver (database, Redis, SQS) and **any database setup** — single-database, multi-database, or multi-tenant. No Redis required.
 
 <p align="center">
   <img src="art/hero.svg" alt="Watchtower — one dashboard for crons, queues and errors" width="100%">
@@ -27,6 +27,8 @@
 
 Laravel already ships excellent observability tools — so why another one? Because most of them either can't be left on in production, are locked to a single queue driver, or only let you *look* at problems instead of *fixing* them. Watchtower is built to live in production permanently, work no matter how your queues are configured, and turn the dashboard into a control panel.
 
+It also adapts to **any database layout**: keep its tables in your main database (**single-database**), isolate them on a dedicated connection (**multi-database**) via `WATCHTOWER_DB_CONNECTION`, or run it in a **multi-tenant** app by pointing it at a stable central connection so you get one dashboard across all tenants. See [Installation](#-installation-in-2-commands).
+
 **Why not Telescope / Horizon / Pulse?**
 
 | Capability | Watchtower | Horizon | Telescope | Pulse |
@@ -36,6 +38,7 @@ Laravel already ships excellent observability tools — so why another one? Beca
 | Scheduled-task + missed-run monitoring | ✓ | ✗ | ✗ | ✗ |
 | Bulk failed-job retry (by type / time window) | ✓ | ✓ | ✗ | ✗ |
 | Built-in error tracker with resolve | ✓ | ✗ | ✗ | ✗ |
+| Single-DB, multi-DB & multi-tenant aware | ✓ | ✗ | ✗ | ✗ |
 | Compiled dashboard (no host frontend deps) | ✓ | ✓ | ✓ | ✓ |
 
 > These tools are **complementary, not strictly competitors**. Horizon is unmatched for deep Redis queue throughput, Telescope is a fantastic local debugger, and Pulse gives you a great application health overview. Watchtower fills the gap in between: a single, always-on, driver-agnostic place to watch crons, queues and errors — and act on them.
