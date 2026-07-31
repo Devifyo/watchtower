@@ -161,7 +161,7 @@ class QueueListener
     protected function durationFor(?JobRecord $record, Carbon $now): ?int
     {
         if ($record && $record->started_at) {
-            return $now->diffInMilliseconds($record->started_at);
+            return (int) abs($now->diffInMilliseconds($record->started_at));
         }
 
         return null;

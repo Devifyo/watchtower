@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Console\Events\ScheduledTaskFailed;
 use Illuminate\Console\Events\ScheduledTaskFinished;
 use Illuminate\Console\Events\ScheduledTaskSkipped;
 use Illuminate\Console\Events\ScheduledTaskStarting;
@@ -23,6 +24,18 @@ it('records a successful run from starting + finished events', function () {
     expect($run->status)->toBe('success');
     expect($run->duration_ms)->toBe(123);
     expect($run->command)->toContain('inspire');
+});
+
+it('stores a non-negative duration when it is derived from started_at', function () {
+    // Carbon 3 diffs are signed; duration_ms is an unsigned column, so a
+    // negative value is rejected by MySQL outright.
+    $event = app(Schedule::class)->command('inspire')->everyMinute();
+
+    event(new ScheduledTaskStarting($event));
+    $this->travel(2)->seconds();
+    event(new ScheduledTaskFailed($event, new Exception('boom')));
+
+    expect(ScheduleRun::first()->duration_ms)->toBeGreaterThanOrEqual(2000);
 });
 
 it('records a skipped run', function () {
