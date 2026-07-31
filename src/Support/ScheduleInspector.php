@@ -5,6 +5,8 @@ namespace Watchtower\Support;
 use Cron\CronExpression;
 use Illuminate\Console\Scheduling\Event as SchedulingEvent;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Watchtower\Models\ScheduleRun;
@@ -18,8 +20,32 @@ class ScheduleInspector
     /** Seconds of slack before a not-yet-recorded run is considered missed. */
     protected int $grace = 90;
 
-    public function __construct(protected Schedule $schedule)
+    protected ?Schedule $schedule = null;
+
+    public function __construct(protected Container $container)
     {
+    }
+
+    /**
+     * Laravel 11+ registers scheduled tasks from bootstrap/app.php's
+     * withSchedule() and routes/console.php — both of which only run once the
+     * console kernel has booted and the Artisan application has started. In an
+     * HTTP request the container would otherwise hand back an empty Schedule,
+     * so boot the console side first (idempotent, and a no-op under artisan).
+     */
+    protected function schedule(): Schedule
+    {
+        if ($this->schedule) {
+            return $this->schedule;
+        }
+
+        try {
+            $this->container->make(ConsoleKernel::class)->all();
+        } catch (\Throwable) {
+            // Non-standard kernel: fall back to whatever is in the container.
+        }
+
+        return $this->schedule = $this->container->make(Schedule::class);
     }
 
     /**
@@ -27,7 +53,7 @@ class ScheduleInspector
      */
     public function tasks(): Collection
     {
-        $events = collect($this->schedule->events());
+        $events = collect($this->schedule()->events());
 
         // Latest recorded run per task_key, in one query.
         $keys = $events->map(fn (SchedulingEvent $e) => TaskKey::for($e))->all();
@@ -114,7 +140,7 @@ class ScheduleInspector
      */
     public function find(string $key): ?SchedulingEvent
     {
-        foreach ($this->schedule->events() as $event) {
+        foreach ($this->schedule()->events() as $event) {
             if (TaskKey::for($event) === $key) {
                 return $event;
             }

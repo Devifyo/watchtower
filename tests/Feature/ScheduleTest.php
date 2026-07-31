@@ -1,9 +1,12 @@
 <?php
 
+use Illuminate\Console\Application as Artisan;
 use Illuminate\Console\Events\ScheduledTaskFinished;
 use Illuminate\Console\Events\ScheduledTaskSkipped;
 use Illuminate\Console\Events\ScheduledTaskStarting;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
+use Illuminate\Foundation\Console\Kernel as FoundationKernel;
 use Watchtower\Models\ScheduleRun;
 use Watchtower\Watchtower;
 
@@ -31,6 +34,41 @@ it('records a skipped run', function () {
     event(new ScheduledTaskSkipped($event));
 
     expect(ScheduleRun::where('status', 'skipped')->count())->toBe(1);
+});
+
+it('discovers tasks registered only on the console side', function () {
+    // Mirrors Laravel 11+ bootstrap/app.php withSchedule(): the callback is
+    // wired through Artisan::starting, which never fires during an HTTP
+    // request unless the inspector boots the console kernel itself.
+    Artisan::starting(fn () => app()->afterResolving(
+        Schedule::class,
+        fn (Schedule $schedule) => $schedule->command('inspire')->hourly()
+    ));
+
+    $response = $this->getJson('watchtower/api/schedule');
+
+    $response->assertOk();
+    expect($response->json('summary.total'))->toBe(1);
+    expect($response->json('tasks.0.command'))->toContain('inspire');
+});
+
+it('discovers tasks from the legacy App\\Console\\Kernel::schedule() style', function () {
+    // Laravel 10 and below define tasks by overriding schedule() on the
+    // console kernel — the container only reaches it via that kernel.
+    app()->singleton(ConsoleKernel::class, fn ($app) => new class($app, $app['events']) extends FoundationKernel
+    {
+        protected function schedule(Schedule $schedule): void
+        {
+            $schedule->command('inspire')->daily();
+        }
+    });
+    app()->forgetInstance(Schedule::class);
+
+    $response = $this->getJson('watchtower/api/schedule');
+
+    $response->assertOk();
+    expect($response->json('summary.total'))->toBe(1);
+    expect($response->json('tasks.0.command'))->toContain('inspire');
 });
 
 it('returns the registered tasks via the API with missed detection', function () {
