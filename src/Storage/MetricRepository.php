@@ -77,7 +77,14 @@ class MetricRepository
 
     protected function deferred(): bool
     {
-        return (bool) ($this->config['writes']['after_response'] ?? true);
+        if (! ($this->config['writes']['after_response'] ?? true)) {
+            return false;
+        }
+
+        // terminating() only fires when the process ends. In a long-running
+        // queue worker that means job records would sit at "processing" until
+        // the worker is restarted, so console contexts always write inline.
+        return ! (function_exists('app') && app()->runningInConsole());
     }
 
     protected function passesSampling(): bool

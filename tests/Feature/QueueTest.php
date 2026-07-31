@@ -53,6 +53,23 @@ it('marks a job failed on JobFailed', function () {
     expect($record->status)->toBe('failed');
 });
 
+it('records processed and failed jobs inline in a worker (after_response on)', function () {
+    // terminating() never fires inside queue:work — both the success and the
+    // failure path must land in the DB while the worker is still running.
+    config()->set('watchtower.writes.after_response', true);
+
+    $ok = fakeJob('uuid-worker-ok');
+    event(new JobProcessing('database', $ok));
+    event(new JobProcessed('database', $ok));
+
+    $bad = fakeJob('uuid-worker-fail');
+    event(new JobProcessing('database', $bad));
+    event(new JobFailed('database', $bad, new Exception('boom')));
+
+    expect(JobRecord::where('uuid', 'uuid-worker-ok')->value('status'))->toBe('processed');
+    expect(JobRecord::where('uuid', 'uuid-worker-fail')->value('status'))->toBe('failed');
+});
+
 it('respects the job ignore list', function () {
     config()->set('watchtower.ignore.jobs', ['App\\Jobs\\SendInvoice']);
 

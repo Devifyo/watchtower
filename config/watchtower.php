@@ -70,10 +70,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | "after_response" defers metric writes to the framework's terminating()
-    | callback so request/job latency is untouched (recommended). "sync" writes
-    | inline. Sampling stores only a fraction of records (1.0 = everything,
-    | 0.1 = ~10%). Failures and schedule runs are always recorded regardless of
-    | the sample rate so you never miss the things that matter.
+    | callback so request latency is untouched (recommended). Console contexts
+    | (queue workers, artisan) always write inline, since terminating() there
+    | only fires when the process exits. Sampling stores only a fraction of
+    | records (1.0 = everything, 0.1 = ~10%). Failures and schedule runs are
+    | always recorded regardless of the sample rate so you never miss the
+    | things that matter.
     |
     */
 
