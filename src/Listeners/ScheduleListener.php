@@ -112,7 +112,7 @@ class ScheduleListener
             if ($run) {
                 $duration = $runtime !== null
                     ? (int) round($runtime * 1000)
-                    : ($run->started_at ? $now->diffInMilliseconds($run->started_at) : null);
+                    : ($run->started_at ? (int) abs($now->diffInMilliseconds($run->started_at)) : null);
 
                 $run->update([
                     'finished_at' => $now,
