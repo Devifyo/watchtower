@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-23
+
+### Added
+
+- Laravel 13 support; the test matrix now covers PHP 8.4 and 8.5. (#1)
+
+### Fixed
+
+- Durations are always stored as non-negative values. Carbon 3 returns signed
+  diffs, which MySQL rejected for the unsigned `duration_ms` column. (#2)
+- Queue workers and artisan commands now write metrics inline even when
+  `writes.after_response` is on, so jobs no longer sit at "processing" until the
+  worker restarts. (#3)
+- The schedule dashboard now discovers tasks registered via `withSchedule()` /
+  `routes/console.php` (Laravel 11+) and the legacy `Console\Kernel::schedule()`
+  style during HTTP requests. (#4)
+
 ## [1.0.2] - 2026-06-18
 
 ### Fixed
@@ -52,7 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or reopened exceptions.
 - **Dashboard** — a compiled Vue single-page dashboard shipped with the package.
 
-[Unreleased]: https://github.com/Devifyo/watchtower/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/Devifyo/watchtower/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Devifyo/watchtower/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/Devifyo/watchtower/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/Devifyo/watchtower/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Devifyo/watchtower/releases/tag/v1.0.0
