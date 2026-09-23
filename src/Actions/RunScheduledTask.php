@@ -53,7 +53,7 @@ class RunScheduledTask
             'timezone' => $event->timezone ? (string) $event->timezone : null,
             'started_at' => $start,
             'finished_at' => $finish,
-            'duration_ms' => $finish->diffInMilliseconds($start),
+            'duration_ms' => (int) abs($finish->diffInMilliseconds($start)),
             'status' => $status,
             'exit_code' => $exitCode,
             'output' => $this->cap($output),
