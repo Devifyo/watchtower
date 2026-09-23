@@ -83,18 +83,15 @@ it('does not store job payloads when disabled', function () {
 
 // ── after-response deferral ─────────────────────────────────────────────────────
 
-it('defers writes to the terminating phase when after_response is on', function () {
+it('writes inline in console context even when after_response is on', function () {
+    // terminating() never fires inside a long-running queue worker, so console
+    // writes must not be deferred.
     config()->set('watchtower.writes.after_response', true);
 
     event(new ScheduledTaskSkipped(app(Schedule::class)->command('inspire')->everyMinute()));
 
-    // Nothing written yet — it is queued on terminating().
-    expect(ScheduleRun::count())->toBe(0);
-
-    app()->terminate();
-
     expect(ScheduleRun::count())->toBe(1);
-})->skip(fn () => ! method_exists(app(), 'terminate'), 'terminate() unavailable');
+});
 
 // ── separate connection ──────────────────────────────────────────────────────
 
