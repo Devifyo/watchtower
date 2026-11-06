@@ -138,19 +138,21 @@ class QueueListener
 
     protected function upsert(?string $uuid, array $attributes): void
     {
-        if ($uuid) {
-            $record = JobRecord::query()->firstOrNew(['uuid' => $uuid]);
-            // Don't let a payload re-write null over a stored value, and never
-            // regress a terminal status back to an earlier one on a late event.
-            if ($record->exists && ($attributes['payload'] ?? null) === null) {
-                unset($attributes['payload']);
-            }
-            $record->fill($attributes)->save();
+        if (! $uuid) {
+            JobRecord::query()->create($attributes);
 
             return;
         }
 
-        JobRecord::query()->create($attributes);
+        // A single statement on the unique uuid: the dispatcher and a worker can
+        // record the same job at the same instant. JobQueued can also land after
+        // the worker's events, so it only fills queued_at on an existing row; a
+        // null payload never overwrites a stored one.
+        $update = ($attributes['status'] ?? null) === 'queued'
+            ? ['queued_at']
+            : array_keys(array_filter($attributes, fn ($value, $key) => $key !== 'payload' || $value !== null, ARRAY_FILTER_USE_BOTH));
+
+        JobRecord::query()->upsert([['uuid' => $uuid, ...$attributes]], ['uuid'], $update);
     }
 
     protected function find(?string $uuid): ?JobRecord
