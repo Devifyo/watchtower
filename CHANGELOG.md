@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A job is stored once even when the dispatcher and a worker record it at the
+  same instant, and a late `JobQueued` no longer moves a finished job back to
+  "queued". With several workers, jobs used to leave duplicate rows stuck at
+  "processing" or "queued", which pruning never removes. A migration collapses
+  existing duplicates and makes `uuid` unique.
+
 ## [1.1.0] - 2026-09-23
 
 ### Added

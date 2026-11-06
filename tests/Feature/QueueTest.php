@@ -3,6 +3,7 @@
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Watchtower\Models\JobRecord;
@@ -209,4 +210,46 @@ it('bulk-retries by exception type', function () {
 
     // Both used the same Exception class.
     $response->assertOk()->assertJsonPath('count', 2);
+});
+
+function queuedEvent(string $uuid, string $name = 'App\\Jobs\\SendInvoice'): JobQueued
+{
+    return new JobQueued('redis', 'default', 'id-'.$uuid, $name, json_encode(['uuid' => $uuid, 'displayName' => $name]), null);
+}
+
+it('keeps the worker progress when the dispatcher records the job after it', function () {
+    // On a fast queue a worker can finish the job before the dispatcher's JobQueued write lands.
+    $job = fakeJob('uuid-late');
+
+    event(new JobProcessing('redis', $job));
+    event(new JobProcessed('redis', $job));
+    event(queuedEvent('uuid-late'));
+
+    expect(JobRecord::where('uuid', 'uuid-late')->get())->toHaveCount(1)
+        ->and(JobRecord::where('uuid', 'uuid-late')->value('status'))->toBe('processed')
+        ->and(JobRecord::where('uuid', 'uuid-late')->value('queued_at'))->not->toBeNull();
+});
+
+it('stores one row per job uuid', function () {
+    // Two processes can record the same job at the same instant: only the index makes the second insert lose.
+    JobRecord::query()->create(['uuid' => 'uuid-unique', 'name' => 'App\\Jobs\\SendInvoice', 'status' => 'queued']);
+
+    expect(fn () => JobRecord::query()->create(['uuid' => 'uuid-unique', 'name' => 'App\\Jobs\\SendInvoice', 'status' => 'processing']))
+        ->toThrow(Illuminate\Database\UniqueConstraintViolationException::class);
+});
+
+it('collapses existing duplicate rows onto the most advanced one when the unique index is added', function () {
+    $migration = require __DIR__.'/../../database/migrations/2026_11_06_000001_make_watchtower_job_records_uuid_unique.php';
+    $migration->down();
+
+    JobRecord::query()->insert([
+        ['uuid' => 'uuid-dup', 'name' => 'App\\Jobs\\SendInvoice', 'status' => 'processed', 'finished_at' => now()],
+        ['uuid' => 'uuid-dup', 'name' => 'App\\Jobs\\SendInvoice', 'status' => 'processing', 'finished_at' => null],
+        ['uuid' => 'uuid-other', 'name' => 'App\\Jobs\\SendInvoice', 'status' => 'processing', 'finished_at' => null],
+    ]);
+
+    $migration->up();
+
+    expect(JobRecord::where('uuid', 'uuid-dup')->pluck('status')->all())->toBe(['processed'])
+        ->and(JobRecord::where('uuid', 'uuid-other')->count())->toBe(1);
 });
